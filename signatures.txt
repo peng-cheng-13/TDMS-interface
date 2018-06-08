@@ -1,0 +1,719 @@
+// generated using javap -classpath client/tachyon-client-0.6.4-jar-with-dependencies.jar -s tachyon.client.TachyonFS
+// to be referenced by JNI calls
+
+public class tachyon.client.TachyonFS extends tachyon.client.AbstractTachyonFS {
+  public static synchronized tachyon.client.TachyonFS get(java.lang.String) throws java.io.IOException;
+    Signature: (Ljava/lang/String;)Ltachyon/client/TachyonFS;
+
+  public static synchronized tachyon.client.TachyonFS get(tachyon.TachyonURI) throws java.io.IOException;
+    Signature: (Ltachyon/TachyonURI;)Ltachyon/client/TachyonFS;
+
+  public static synchronized tachyon.client.TachyonFS get(java.lang.String, int, boolean) throws java.io.IOException;
+    Signature: (Ljava/lang/String;IZ)Ltachyon/client/TachyonFS;
+
+  synchronized void accessLocalBlock(long) throws java.io.IOException;
+    Signature: (J)V
+
+  synchronized void addCheckpoint(int) throws java.io.IOException;
+    Signature: (I)V
+
+  synchronized boolean asyncCheckpoint(int) throws java.io.IOException;
+    Signature: (I)Z
+
+  public synchronized void cacheBlock(long) throws java.io.IOException;
+    Signature: (J)V
+
+  public synchronized void cancelBlock(long) throws java.io.IOException;
+    Signature: (J)V
+
+  public synchronized void close() throws java.io.IOException;
+    Signature: ()V
+
+  synchronized void completeFile(int) throws java.io.IOException;
+    Signature: (I)V
+
+  synchronized java.lang.String createAndGetUserUfsTempFolder(java.lang.Object) throws java.io.IOException;
+    Signature: (Ljava/lang/Object;)Ljava/lang/String;
+
+  public synchronized int createDependency(java.util.List<java.lang.String>, java.util.List<java.lang.String>, java.lang.String, java.util.List<java.nio.ByteBuffer>, java.lang.String, java.lang.String, java.lang.String, int, long) throws java.io.IOException;
+    Signature: (Ljava/util/List;Ljava/util/List;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IJ)I
+
+  public synchronized int createFile(tachyon.TachyonURI, tachyon.TachyonURI, long, boolean) throws java.io.IOException;
+    Signature: (Ltachyon/TachyonURI;Ltachyon/TachyonURI;JZ)I
+
+  public synchronized int createFile(java.lang.String) throws java.io.IOException;
+    Signature: (Ljava/lang/String;)I
+
+  public synchronized int createRawTable(tachyon.TachyonURI, int) throws java.io.IOException;
+    Signature: (Ltachyon/TachyonURI;I)I
+
+  public synchronized int createRawTable(tachyon.TachyonURI, int, java.nio.ByteBuffer) throws java.io.IOException;
+    Signature: (Ltachyon/TachyonURI;ILjava/nio/ByteBuffer;)I
+
+  public synchronized boolean delete(int, tachyon.TachyonURI, boolean) throws java.io.IOException;
+    Signature: (ILtachyon/TachyonURI;Z)Z
+
+  public synchronized boolean delete(java.lang.String, boolean) throws java.io.IOException;
+    Signature: (Ljava/lang/String;Z)Z
+
+  public synchronized boolean exist(tachyon.TachyonURI) throws java.io.IOException;
+    Signature: (Ltachyon/TachyonURI;)Z
+
+  public synchronized long getBlockId(int, int) throws java.io.IOException;
+    Signature: (II)J
+
+  synchronized int getBlockLockId();
+    Signature: ()I
+
+  synchronized tachyon.thrift.ClientBlockInfo getClientBlockInfo(long) throws java.io.IOException;
+    Signature: (J)Ltachyon/thrift/ClientBlockInfo;
+
+  public synchronized tachyon.thrift.ClientDependencyInfo getClientDependencyInfo(int) throws java.io.IOException;
+    Signature: (I)Ltachyon/thrift/ClientDependencyInfo;
+
+  public synchronized tachyon.client.TachyonFile getFile(int) throws java.io.IOException;
+    Signature: (I)Ltachyon/client/TachyonFile;
+
+  public synchronized tachyon.client.TachyonFile getFile(int, boolean) throws java.io.IOException;
+    Signature: (IZ)Ltachyon/client/TachyonFile;
+
+  public synchronized tachyon.client.TachyonFile getFile(tachyon.TachyonURI) throws java.io.IOException;
+    Signature: (Ltachyon/TachyonURI;)Ltachyon/client/TachyonFile;
+
+  public synchronized tachyon.client.TachyonFile getFile(java.lang.String) throws java.io.IOException;
+    Signature: (Ljava/lang/String;)Ltachyon/client/TachyonFile;
+
+  public synchronized tachyon.client.TachyonFile getFile(java.lang.String, boolean) throws java.io.IOException;
+    Signature: (Ljava/lang/String;Z)Ltachyon/client/TachyonFile;
+
+  public synchronized tachyon.client.TachyonFile getFile(tachyon.TachyonURI, boolean) throws java.io.IOException;
+    Signature: (Ltachyon/TachyonURI;Z)Ltachyon/client/TachyonFile;
+
+  public synchronized java.util.List<tachyon.thrift.ClientBlockInfo> getFileBlocks(int) throws java.io.IOException;
+    Signature: (I)Ljava/util/List;
+
+  public synchronized int getFileId(tachyon.TachyonURI);
+    Signature: (Ltachyon/TachyonURI;)I
+
+  public synchronized tachyon.thrift.ClientFileInfo getFileStatus(int, tachyon.TachyonURI, boolean) throws java.io.IOException;
+    Signature: (ILtachyon/TachyonURI;Z)Ltachyon/thrift/ClientFileInfo;
+
+  public tachyon.thrift.ClientFileInfo getFileStatus(int, tachyon.TachyonURI) throws java.io.IOException;
+    Signature: (ILtachyon/TachyonURI;)Ltachyon/thrift/ClientFileInfo;
+
+  public synchronized tachyon.thrift.ClientFileInfo getFileStatus(int, boolean) throws java.io.IOException;
+    Signature: (IZ)Ltachyon/thrift/ClientFileInfo;
+
+  public synchronized java.lang.String getLocalBlockTemporaryPath(long, long) throws java.io.IOException;
+    Signature: (JJ)Ljava/lang/String;
+
+  public synchronized tachyon.client.table.RawTable getRawTable(int) throws java.io.IOException;
+    Signature: (I)Ltachyon/client/table/RawTable;
+
+  public synchronized tachyon.client.table.RawTable getRawTable(tachyon.TachyonURI) throws java.io.IOException;
+    Signature: (Ltachyon/TachyonURI;)Ltachyon/client/table/RawTable;
+
+  public synchronized java.lang.String getUfsAddress() throws java.io.IOException;
+    Signature: ()Ljava/lang/String;
+
+  public synchronized tachyon.TachyonURI getUri();
+    Signature: ()Ltachyon/TachyonURI;
+
+  long getUserId() throws java.io.IOException;
+    Signature: ()J
+
+  public synchronized java.util.List<tachyon.thrift.ClientWorkerInfo> getWorkersInfo() throws java.io.IOException;
+    Signature: ()Ljava/util/List;
+
+  public synchronized boolean hasLocalWorker() throws java.io.IOException;
+    Signature: ()Z
+
+  public synchronized boolean isConnected();
+    Signature: ()Z
+
+  synchronized boolean isDirectory(int);
+    Signature: (I)Z
+
+  public synchronized java.util.List<tachyon.thrift.ClientFileInfo> listStatus(tachyon.TachyonURI) throws java.io.IOException;
+    Signature: (Ltachyon/TachyonURI;)Ljava/util/List;
+
+  synchronized java.lang.String lockBlock(long, int) throws java.io.IOException;
+    Signature: (JI)Ljava/lang/String;
+
+  public synchronized boolean mkdirs(tachyon.TachyonURI, boolean) throws java.io.IOException;
+    Signature: (Ltachyon/TachyonURI;Z)Z
+
+  public synchronized void pinFile(int) throws java.io.IOException;
+    Signature: (I)V
+
+  public synchronized boolean freepath(int, tachyon.TachyonURI, boolean) throws java.io.IOException;
+    Signature: (ILtachyon/TachyonURI;Z)Z
+
+  public synchronized boolean promoteBlock(long) throws java.io.IOException;
+    Signature: (J)Z
+
+  public synchronized boolean rename(int, tachyon.TachyonURI, tachyon.TachyonURI) throws java.io.IOException;
+    Signature: (ILtachyon/TachyonURI;Ltachyon/TachyonURI;)Z
+
+  public synchronized void reportLostFile(int) throws java.io.IOException;
+    Signature: (I)V
+
+  public synchronized void requestFilesInDependency(int) throws java.io.IOException;
+    Signature: (I)V
+
+  public synchronized long requestSpace(long, long) throws java.io.IOException;
+    Signature: (JJ)J
+
+  public synchronized void setPinned(int, boolean) throws java.io.IOException;
+    Signature: (IZ)V
+
+  public java.lang.String toString();
+    Signature: ()Ljava/lang/String;
+
+  synchronized boolean unlockBlock(long, int) throws java.io.IOException;
+    Signature: (JI)Z
+
+  public synchronized void unpinFile(int) throws java.io.IOException;
+    Signature: (I)V
+
+  public synchronized void updateRawTableMetadata(int, java.nio.ByteBuffer) throws java.io.IOException;
+    Signature: (ILjava/nio/ByteBuffer;)V
+
+  public boolean freepath(tachyon.TachyonURI, boolean) throws java.io.IOException;
+    Signature: (Ltachyon/TachyonURI;Z)Z
+
+  public boolean rename(tachyon.TachyonURI, tachyon.TachyonURI) throws java.io.IOException;
+    Signature: (Ltachyon/TachyonURI;Ltachyon/TachyonURI;)Z
+
+  public boolean rename(int, tachyon.TachyonURI) throws java.io.IOException;
+    Signature: (ILtachyon/TachyonURI;)Z
+
+  public boolean mkdir(tachyon.TachyonURI) throws java.io.IOException;
+    Signature: (Ltachyon/TachyonURI;)Z
+
+  public boolean delete(tachyon.TachyonURI, boolean) throws java.io.IOException;
+    Signature: (Ltachyon/TachyonURI;Z)Z
+
+  public boolean delete(int, boolean) throws java.io.IOException;
+    Signature: (IZ)Z
+
+  public int createFile(tachyon.TachyonURI, tachyon.TachyonURI) throws java.io.IOException;
+    Signature: (Ltachyon/TachyonURI;Ltachyon/TachyonURI;)I
+
+  public int createFile(tachyon.TachyonURI, long) throws java.io.IOException;
+    Signature: (Ltachyon/TachyonURI;J)I
+
+  public int createFile(tachyon.TachyonURI) throws java.io.IOException;
+    Signature: (Ltachyon/TachyonURI;)I
+
+  static {};
+    Signature: ()V
+}
+
+Compiled from "TachyonFile.java"
+public class tachyon.client.TachyonFile implements java.lang.Comparable<tachyon.client.TachyonFile> {
+  final tachyon.client.TachyonFS mTachyonFS;
+    Signature: Ltachyon/client/TachyonFS;
+  final int mFileId;
+    Signature: I
+  tachyon.client.TachyonFile(tachyon.client.TachyonFS, int);
+    Signature: (Ltachyon/client/TachyonFS;I)V
+
+  public int compareTo(tachyon.client.TachyonFile);
+    Signature: (Ltachyon/client/TachyonFile;)I
+
+  public boolean equals(java.lang.Object);
+    Signature: (Ljava/lang/Object;)Z
+
+  public long getBlockId(int) throws java.io.IOException;
+    Signature: (I)J
+
+  long getBlockIdBasedOnOffset(long) throws java.io.IOException;
+    Signature: (J)J
+
+  public long getBlockSizeByte() throws java.io.IOException;
+    Signature: ()J
+
+  public synchronized tachyon.thrift.ClientBlockInfo getClientBlockInfo(int) throws java.io.IOException;
+    Signature: (I)Ltachyon/thrift/ClientBlockInfo;
+
+  public long getCreationTimeMs() throws java.io.IOException;
+    Signature: ()J
+
+  public int getDiskReplication();
+    Signature: ()I
+
+  public tachyon.client.InStream getInStream(tachyon.client.ReadType) throws java.io.IOException;
+    Signature: (Ltachyon/client/ReadType;)Ltachyon/client/InStream;
+
+  public java.lang.String getLocalFilename(int) throws java.io.IOException;
+    Signature: (I)Ljava/lang/String;
+
+  public java.util.List<java.lang.String> getLocationHosts() throws java.io.IOException;
+    Signature: ()Ljava/util/List;
+
+  public int getNumberOfBlocks() throws java.io.IOException;
+    Signature: ()I
+
+  public tachyon.client.OutStream getOutStream(tachyon.client.WriteType) throws java.io.IOException;
+    Signature: (Ltachyon/client/WriteType;)Ltachyon/client/OutStream;
+
+  public java.lang.String getPath() throws java.io.IOException;
+    Signature: ()Ljava/lang/String;
+
+  public java.lang.Object getUFSConf();
+    Signature: ()Ljava/lang/Object;
+
+  java.lang.String getUfsPath() throws java.io.IOException;
+    Signature: ()Ljava/lang/String;
+
+  public int hashCode();
+    Signature: ()I
+
+  public boolean isComplete() throws java.io.IOException;
+    Signature: ()Z
+
+  public boolean isDirectory() throws java.io.IOException;
+    Signature: ()Z
+
+  public boolean isFile() throws java.io.IOException;
+    Signature: ()Z
+
+  public boolean isInMemory() throws java.io.IOException;
+    Signature: ()Z
+
+  public long length() throws java.io.IOException;
+    Signature: ()J
+
+  public boolean needPin() throws java.io.IOException;
+    Signature: ()Z
+
+  public boolean promoteBlock(int) throws java.io.IOException;
+    Signature: (I)Z
+
+  public tachyon.client.TachyonByteBuffer readByteBuffer(int) throws java.io.IOException;
+    Signature: (I)Ltachyon/client/TachyonByteBuffer;
+
+  tachyon.client.TachyonByteBuffer readLocalByteBuffer(int) throws java.io.IOException;
+    Signature: (I)Ltachyon/client/TachyonByteBuffer;
+
+  tachyon.client.TachyonByteBuffer readRemoteByteBuffer(tachyon.thrift.ClientBlockInfo);
+    Signature: (Ltachyon/thrift/ClientBlockInfo;)Ltachyon/client/TachyonByteBuffer;
+
+  public boolean recache() throws java.io.IOException;
+    Signature: ()Z
+
+  boolean recache(int) throws java.io.IOException;
+    Signature: (I)Z
+
+  public boolean rename(tachyon.TachyonURI) throws java.io.IOException;
+    Signature: (Ltachyon/TachyonURI;)Z
+
+  public void setUFSConf(java.lang.Object);
+    Signature: (Ljava/lang/Object;)V
+
+  public java.lang.String toString();
+    Signature: ()Ljava/lang/String;
+
+  public int compareTo(java.lang.Object);
+    Signature: (Ljava/lang/Object;)I
+
+  static {};
+    Signature: ()V
+}
+
+Compiled from "TachyonByteBuffer.java"
+public class tachyon.client.TachyonByteBuffer implements java.io.Closeable {
+  public final java.nio.ByteBuffer mData;
+    Signature: Ljava/nio/ByteBuffer;
+  tachyon.client.TachyonByteBuffer(tachyon.client.TachyonFS, java.nio.ByteBuffer, long, int);
+    Signature: (Ltachyon/client/TachyonFS;Ljava/nio/ByteBuffer;JI)V
+
+  public synchronized void close() throws java.io.IOException;
+    Signature: ()V
+}
+Compiled from "ByteBuffer.java"
+public abstract class java.nio.ByteBuffer extends java.nio.Buffer implements java.lang.Comparable<java.nio.ByteBuffer> {
+  final byte[] hb;
+    Signature: [B
+  final int offset;
+    Signature: I
+  boolean isReadOnly;
+    Signature: Z
+  boolean bigEndian;
+    Signature: Z
+  boolean nativeByteOrder;
+    Signature: Z
+  java.nio.ByteBuffer(int, int, int, int, byte[], int);
+    Signature: (IIII[BI)V
+
+  java.nio.ByteBuffer(int, int, int, int);
+    Signature: (IIII)V
+
+  public static java.nio.ByteBuffer allocateDirect(int);
+    Signature: (I)Ljava/nio/ByteBuffer;
+
+  public static java.nio.ByteBuffer allocate(int);
+    Signature: (I)Ljava/nio/ByteBuffer;
+
+  public static java.nio.ByteBuffer wrap(byte[], int, int);
+    Signature: ([BII)Ljava/nio/ByteBuffer;
+
+  public static java.nio.ByteBuffer wrap(byte[]);
+    Signature: ([B)Ljava/nio/ByteBuffer;
+
+  public abstract java.nio.ByteBuffer slice();
+    Signature: ()Ljava/nio/ByteBuffer;
+
+  public abstract java.nio.ByteBuffer duplicate();
+    Signature: ()Ljava/nio/ByteBuffer;
+
+  public abstract java.nio.ByteBuffer asReadOnlyBuffer();
+    Signature: ()Ljava/nio/ByteBuffer;
+
+  public abstract byte get();
+    Signature: ()B
+
+  public abstract java.nio.ByteBuffer put(byte);
+    Signature: (B)Ljava/nio/ByteBuffer;
+
+  public abstract byte get(int);
+    Signature: (I)B
+
+  public abstract java.nio.ByteBuffer put(int, byte);
+    Signature: (IB)Ljava/nio/ByteBuffer;
+
+  public java.nio.ByteBuffer get(byte[], int, int);
+    Signature: ([BII)Ljava/nio/ByteBuffer;
+
+  public java.nio.ByteBuffer get(byte[]);
+    Signature: ([B)Ljava/nio/ByteBuffer;
+
+  public java.nio.ByteBuffer put(java.nio.ByteBuffer);
+    Signature: (Ljava/nio/ByteBuffer;)Ljava/nio/ByteBuffer;
+
+  public java.nio.ByteBuffer put(byte[], int, int);
+    Signature: ([BII)Ljava/nio/ByteBuffer;
+
+  public final java.nio.ByteBuffer put(byte[]);
+    Signature: ([B)Ljava/nio/ByteBuffer;
+
+  public final boolean hasArray();
+    Signature: ()Z
+
+  public final byte[] array();
+    Signature: ()[B
+
+  public final int arrayOffset();
+    Signature: ()I
+
+  public abstract java.nio.ByteBuffer compact();
+    Signature: ()Ljava/nio/ByteBuffer;
+
+  public abstract boolean isDirect();
+    Signature: ()Z
+
+  public java.lang.String toString();
+    Signature: ()Ljava/lang/String;
+
+  public int hashCode();
+    Signature: ()I
+
+  public boolean equals(java.lang.Object);
+    Signature: (Ljava/lang/Object;)Z
+
+  public int compareTo(java.nio.ByteBuffer);
+    Signature: (Ljava/nio/ByteBuffer;)I
+
+  public final java.nio.ByteOrder order();
+    Signature: ()Ljava/nio/ByteOrder;
+
+  public final java.nio.ByteBuffer order(java.nio.ByteOrder);
+    Signature: (Ljava/nio/ByteOrder;)Ljava/nio/ByteBuffer;
+
+  abstract byte _get(int);
+    Signature: (I)B
+
+  abstract void _put(int, byte);
+    Signature: (IB)V
+
+  public abstract char getChar();
+    Signature: ()C
+
+  public abstract java.nio.ByteBuffer putChar(char);
+    Signature: (C)Ljava/nio/ByteBuffer;
+
+  public abstract char getChar(int);
+    Signature: (I)C
+
+  public abstract java.nio.ByteBuffer putChar(int, char);
+    Signature: (IC)Ljava/nio/ByteBuffer;
+
+  public abstract java.nio.CharBuffer asCharBuffer();
+    Signature: ()Ljava/nio/CharBuffer;
+
+  public abstract short getShort();
+    Signature: ()S
+
+  public abstract java.nio.ByteBuffer putShort(short);
+    Signature: (S)Ljava/nio/ByteBuffer;
+
+  public abstract short getShort(int);
+    Signature: (I)S
+
+  public abstract java.nio.ByteBuffer putShort(int, short);
+    Signature: (IS)Ljava/nio/ByteBuffer;
+
+  public abstract java.nio.ShortBuffer asShortBuffer();
+    Signature: ()Ljava/nio/ShortBuffer;
+
+  public abstract int getInt();
+    Signature: ()I
+
+  public abstract java.nio.ByteBuffer putInt(int);
+    Signature: (I)Ljava/nio/ByteBuffer;
+
+  public abstract int getInt(int);
+    Signature: (I)I
+
+  public abstract java.nio.ByteBuffer putInt(int, int);
+    Signature: (II)Ljava/nio/ByteBuffer;
+
+  public abstract java.nio.IntBuffer asIntBuffer();
+    Signature: ()Ljava/nio/IntBuffer;
+
+  public abstract long getLong();
+    Signature: ()J
+
+  public abstract java.nio.ByteBuffer putLong(long);
+    Signature: (J)Ljava/nio/ByteBuffer;
+
+  public abstract long getLong(int);
+    Signature: (I)J
+
+  public abstract java.nio.ByteBuffer putLong(int, long);
+    Signature: (IJ)Ljava/nio/ByteBuffer;
+
+  public abstract java.nio.LongBuffer asLongBuffer();
+    Signature: ()Ljava/nio/LongBuffer;
+
+  public abstract float getFloat();
+    Signature: ()F
+
+  public abstract java.nio.ByteBuffer putFloat(float);
+    Signature: (F)Ljava/nio/ByteBuffer;
+
+  public abstract float getFloat(int);
+    Signature: (I)F
+
+  public abstract java.nio.ByteBuffer putFloat(int, float);
+    Signature: (IF)Ljava/nio/ByteBuffer;
+
+  public abstract java.nio.FloatBuffer asFloatBuffer();
+    Signature: ()Ljava/nio/FloatBuffer;
+
+  public abstract double getDouble();
+    Signature: ()D
+
+  public abstract java.nio.ByteBuffer putDouble(double);
+    Signature: (D)Ljava/nio/ByteBuffer;
+
+  public abstract double getDouble(int);
+    Signature: (I)D
+
+  public abstract java.nio.ByteBuffer putDouble(int, double);
+    Signature: (ID)Ljava/nio/ByteBuffer;
+
+  public abstract java.nio.DoubleBuffer asDoubleBuffer();
+    Signature: ()Ljava/nio/DoubleBuffer;
+
+  public java.lang.Object array();
+    Signature: ()Ljava/lang/Object;
+
+  public int compareTo(java.lang.Object);
+    Signature: (Ljava/lang/Object;)I
+}
+Compiled from "InStream.java"
+public abstract class tachyon.client.InStream extends java.io.InputStream {
+  protected final tachyon.client.TachyonFile mFile;
+    Signature: Ltachyon/client/TachyonFile;
+  protected final tachyon.client.TachyonFS mTachyonFS;
+    Signature: Ltachyon/client/TachyonFS;
+  protected final tachyon.client.ReadType mReadType;
+    Signature: Ltachyon/client/ReadType;
+  tachyon.client.InStream(tachyon.client.TachyonFile, tachyon.client.ReadType);
+    Signature: (Ltachyon/client/TachyonFile;Ltachyon/client/ReadType;)V
+
+  public abstract void close() throws java.io.IOException;
+    Signature: ()V
+
+  public abstract int read() throws java.io.IOException;
+    Signature: ()I
+
+  public abstract int read(byte[]) throws java.io.IOException;
+    Signature: ([B)I
+
+  public abstract int read(byte[], int, int) throws java.io.IOException;
+    Signature: ([BII)I
+
+  public abstract void seek(long) throws java.io.IOException;
+    Signature: (J)V
+
+  public abstract long skip(long) throws java.io.IOException;
+    Signature: (J)J
+}
+Compiled from "OutStream.java"
+public abstract class tachyon.client.OutStream extends java.io.OutputStream {
+  protected final tachyon.conf.UserConf mUserConf;
+    Signature: Ltachyon/conf/UserConf;
+  protected final tachyon.client.TachyonFile mFile;
+    Signature: Ltachyon/client/TachyonFile;
+  protected final tachyon.client.TachyonFS mTachyonFS;
+    Signature: Ltachyon/client/TachyonFS;
+  protected final tachyon.client.WriteType mWriteType;
+    Signature: Ltachyon/client/WriteType;
+  tachyon.client.OutStream(tachyon.client.TachyonFile, tachyon.client.WriteType);
+    Signature: (Ltachyon/client/TachyonFile;Ltachyon/client/WriteType;)V
+
+  public abstract void cancel() throws java.io.IOException;
+    Signature: ()V
+
+  public abstract void close() throws java.io.IOException;
+    Signature: ()V
+
+  public abstract void flush() throws java.io.IOException;
+    Signature: ()V
+
+  public abstract void write(byte[]) throws java.io.IOException;
+    Signature: ([B)V
+
+  public abstract void write(byte[], int, int) throws java.io.IOException;
+    Signature: ([BII)V
+
+  public abstract void write(int) throws java.io.IOException;
+    Signature: (I)V
+}
+Compiled from "TachyonURI.java"
+public final class tachyon.TachyonURI implements java.lang.Comparable<tachyon.TachyonURI> {
+  public static final java.lang.String SEPARATOR;
+    Signature: Ljava/lang/String;
+  public static final java.lang.String CUR_DIR;
+    Signature: Ljava/lang/String;
+  public static final tachyon.TachyonURI EMPTY_URI;
+    Signature: Ltachyon/TachyonURI;
+  public tachyon.TachyonURI(java.lang.String);
+    Signature: (Ljava/lang/String;)V
+
+  public tachyon.TachyonURI(java.lang.String, java.lang.String, java.lang.String);
+    Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+
+  public tachyon.TachyonURI(tachyon.TachyonURI, tachyon.TachyonURI);
+    Signature: (Ltachyon/TachyonURI;Ltachyon/TachyonURI;)V
+
+  public int compareTo(tachyon.TachyonURI);
+    Signature: (Ltachyon/TachyonURI;)I
+
+  public boolean equals(java.lang.Object);
+    Signature: (Ljava/lang/Object;)Z
+
+  public java.lang.String getAuthority();
+    Signature: ()Ljava/lang/String;
+
+  public int getDepth();
+    Signature: ()I
+
+  public java.lang.String getHost();
+    Signature: ()Ljava/lang/String;
+
+  public java.lang.String getName();
+    Signature: ()Ljava/lang/String;
+
+  public tachyon.TachyonURI getParent();
+    Signature: ()Ltachyon/TachyonURI;
+
+  public java.lang.String getPath();
+    Signature: ()Ljava/lang/String;
+
+  public int getPort();
+    Signature: ()I
+
+  public java.lang.String getScheme();
+    Signature: ()Ljava/lang/String;
+
+  public boolean hasAuthority();
+    Signature: ()Z
+
+  public int hashCode();
+    Signature: ()I
+
+  public boolean hasScheme();
+    Signature: ()Z
+
+  public boolean isAbsolute();
+    Signature: ()Z
+
+  public boolean isPathAbsolute();
+    Signature: ()Z
+
+  public boolean isRoot();
+    Signature: ()Z
+
+  public tachyon.TachyonURI join(java.lang.String);
+    Signature: (Ljava/lang/String;)Ltachyon/TachyonURI;
+
+  public tachyon.TachyonURI join(tachyon.TachyonURI);
+    Signature: (Ltachyon/TachyonURI;)Ltachyon/TachyonURI;
+
+  public java.lang.String toString();
+    Signature: ()Ljava/lang/String;
+
+  public int compareTo(java.lang.Object);
+    Signature: (Ljava/lang/Object;)I
+
+  static {};
+    Signature: ()V
+}
+
+
+Compiled from "TachyonKV.java"
+public class tachyon.client.TachyonKV {
+  public static final java.lang.String DEFAULT_KVSTORE;
+    Signature: Ljava/lang/String;
+  public static final int DEFAULT_BUFFER_SIZE;
+    Signature: I
+  public tachyon.client.TachyonKV(tachyon.client.TachyonFS, tachyon.client.ReadType, tachyon.client.WriteType, long);
+    Signature: (Ltachyon/client/TachyonFS;Ltachyon/client/ReadType;Ltachyon/client/WriteType;J)V
+
+  public tachyon.client.TachyonKV(tachyon.client.TachyonFS, tachyon.client.ReadType, tachyon.client.WriteType, long, java.lang.String);
+    Signature: (Ltachyon/client/TachyonFS;Ltachyon/client/ReadType;Ltachyon/client/WriteType;JLjava/lang/String;)V
+
+  public boolean init();
+    Signature: ()Z
+
+  public void write(java.lang.String, byte[]) throws java.io.IOException;
+    Signature: (Ljava/lang/String;[B)V
+
+  public void write(java.lang.String, byte[], int, int) throws java.io.IOException;
+    Signature: (Ljava/lang/String;[BII)V
+
+  public int read(java.lang.String, byte[]) throws java.io.IOException;
+    Signature: (Ljava/lang/String;[B)I
+
+  public int read(java.lang.String, byte[], int, int) throws java.io.IOException;
+    Signature: (Ljava/lang/String;[BII)I
+
+  public void writeBuffer(java.lang.String, java.nio.ByteBuffer) throws java.io.IOException;
+    Signature: (Ljava/lang/String;Ljava/nio/ByteBuffer;)V
+
+  public void writeBuffer(java.lang.String, java.nio.ByteBuffer, int, int) throws java.io.IOException;
+    Signature: (Ljava/lang/String;Ljava/nio/ByteBuffer;II)V
+
+  public int readBuffer(java.lang.String, java.nio.ByteBuffer) throws java.io.IOException;
+    Signature: (Ljava/lang/String;Ljava/nio/ByteBuffer;)I
+
+  public int readBuffer(java.lang.String, java.nio.ByteBuffer, int, int) throws java.io.IOException;
+    Signature: (Ljava/lang/String;Ljava/nio/ByteBuffer;II)I
+
+  public java.nio.ByteBuffer getReadBuffer();
+    Signature: ()Ljava/nio/ByteBuffer;
+}
