@@ -1,0 +1,3 @@
+#!/bin/bash
+g++ -std=c++11 write.cc -I/home/condor/install/liballuxio/include/ -I/usr/software/java/jdk1.8.0_121/include/ -I/usr/software/java/jdk1.8.0_121/include/linux -L/home/condor/install/liballuxio/lib -lalluxio -o write
+

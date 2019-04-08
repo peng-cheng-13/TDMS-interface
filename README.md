@@ -11,7 +11,7 @@ TDMS C/C++ APIs on top of Alluxio(v1.6.1)
 
 # Compatibility:
 
-The library currently supports Alluxio 1.2.0.
+The library currently supports Alluxio 1.6.1.
 
 # Compilation:
 
