@@ -1,6 +1,6 @@
 # liballuxio
 
-C/C++ API for Alluxio (formerly Tachyon)
+TDMS C/C++ APIs on top of Alluxio(v1.6.1)
 
 # Requirement:
 
