@@ -163,13 +163,13 @@ jFileOutStream testCreateFileWithOptions(jTDMSFileSystem client, const char *pat
   bool fileExists = false;
   TDMSCreateFileOptions* options = TDMSCreateFileOptions::getCreateFileOptions();
   printf("\n");
-  options->setDataAccessPattern("PIPELINE","cn17662");
-  options->setDataAccessPattern("PIPELINE");
-  options->setDataAccessPattern("SCATTER");
-  options->setDataAccessPattern("GATHER");
-  options->setDataAccessPattern("GATHER","cn17662");
-  options->setDataAccessPattern("MULTICAST");
-  options->setDataAccessPattern("UNOWN");
+  client->setDataAccessPattern("PIPELINE","cn17662");
+  client->setDataAccessPattern("PIPELINE");
+  client->setDataAccessPattern("SCATTER");
+  client->setDataAccessPattern("GATHER");
+  client->setDataAccessPattern("GATHER","cn17662");
+  client->setDataAccessPattern("MULTICAST");
+  client->setDataAccessPattern("UNOWN");
   //options->setWriteType(CACHE_THROUGH);
 
   fileOutStream = client->createFile(path, options);
@@ -303,7 +303,7 @@ void testCopyFile(jTDMSFileSystem client, const char *inPath, const char *alluxi
   TDMSFileSystem afs(localContext);
 
   createOptions = TDMSCreateFileOptions::getCreateFileOptions();
-  createOptions->setDataAccessPattern("PIPELINE");
+  afs.setDataAccessPattern("PIPELINE");
   //createOptions->setWriteType(CACHE_THROUGH);
 
   targetOutStream = afs.createFile(alluxioPath, createOptions);

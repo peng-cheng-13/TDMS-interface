@@ -315,6 +315,16 @@ bool Env::jstringToString(jstring str, std::string& cStr)
   return true;
 }
 
+char *Env::jstringToChar(jstring str)
+{
+  if (str == NULL) {
+    return NULL;
+  }
+  char* buf;
+  buf = (char *) m_env->GetStringUTFChars(str, NULL);
+  return buf;
+}
+
 bool Env::getClassName(jclass cls, jobject instance, std::string& nameStr)
 {
   try {

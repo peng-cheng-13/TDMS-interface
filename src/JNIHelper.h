@@ -293,6 +293,7 @@ public:
 
   bool getClassName(jclass cls, jobject instance, std::string& nameStr);
   bool jstringToString(jstring str, std::string& cStr);
+  char *jstringToChar(jstring str);
   bool throwableToString(jthrowable except, std::string& exceptStr);
 
   /** Exception related methods **/

@@ -2,6 +2,9 @@
  *  @author         Peng Cheng <peng_cheng_13@163.com>
  *  @organization   NSCC-GZ
  * 
+ * @author        Adam Storm <ajstorm@ca.ibm.com>
+ * @organization  IBM
+ *
  * TDMS C/C++ APIs on top of Alluxio
  *
  */
@@ -125,13 +128,28 @@ class TDMSFileSystem {
         long int fileSize(const char *path);
         void createDirectory(const char *path);
         void deletePath(const char *path, bool recursive = false);
-
+        void deleteAlluxioPath(const char *path, bool alluxioOnly = false);
+        void loadMetadata(const char *path);
         jFileInStream openFile(const char *path, TDMSOpenFileOptions *options = nullptr);
+        jFileInStream queryFile(const char *path, const char *varname, double max, double min, bool augmented);
+        //char **selectFiles(const char* keylist[], const char* valuelist[], const char* typelist[], int argsize, int mpirsize, int mpirank);
+        int selectFiles(char **pathlist, const char* keylist[], const char* valuelist[], const char* typelist[], int argsize, int mpirsize, int mpirank);
+        void addDatasetInfo(char *name,  char* keylist[], char* valuelist[], int argsize);
+        void setDatasetInfo(const char *path);
         jFileOutStream createFile(const char * path, TDMSCreateFileOptions *options = nullptr);
         jFileOutStream openFileForAppend(const char *path, TDMSCreateFileOptions *options);
         void completeAppend(const char *path, jFileOutStream fileOutStream);
         void renameFile(const char *origPath, const char *newPath);
         std::vector<std::string> listPath(const char * path, ListPathFilter filter);
+        void setDataAccessPattern(char* DAP);
+        void setDataAccessPattern(char* DAP, char* tagethost);
+        void setDataAccessPattern(char* DAP, double size);
+        void defineDataAccessPattern(char* DAP);
+        void setStorageTier(char* DAP, int tier);
+        void setBlockSize(char* DAP, double size);
+        void setLayoutStrategy(char* DAP, char* layout);
+        void setLoadBalanceStrategy(char* DAP, char* loadbalance);
+        void setHost(char* DAP, char* host);
 
     private:
         TDMSClientContext& mClient;
@@ -158,14 +176,17 @@ class FileOutStream : public JNIObjBase
   void write(int byte);
   void write(const void *buff, int length);
   void write(const void *buff, int length, int off, int maxLen);
+  void buildIndex(int size, bool augmented);
+  bool shouldIndex();
+  double getBlockMax();
+  double getBlockMin();
 };
 
 class TDMSCreateFileOptions : public JNIObjBase
 {
   public:
     static jTDMSCreateFileOptions getCreateFileOptions();
-    void setDataAccessPattern(char* DAP);
-    void setDataAccessPattern(char* DAP, char* tagethost);
+    void setFileInfo(int num, ...);
     //void setWriteType(WriteType writeType);
     jobject getOptions()
     {
@@ -175,6 +196,7 @@ class TDMSCreateFileOptions : public JNIObjBase
   private:
     TDMSCreateFileOptions(jni::Env env, jobject createFileOptions) :  JNIObjBase(env, createFileOptions) {}
 };
+
 
 
 //File input stream
@@ -190,6 +212,8 @@ class FileInStream : public JNIObjBase {
           std::chrono::duration<double>* pBufferCreationTimeCounter,
           std::chrono::duration<double>* pReadTimeCounter,
           std::chrono::duration<double>* pBufferCopyTimeCounter);
+    int read(void *buff, int off, int length);
+    long maxSeekPosition();
     void seek(long pos);
     long skip(long n);
   

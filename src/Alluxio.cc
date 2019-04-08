@@ -1,8 +1,12 @@
 /**
+ *
+ *  @author         Peng Cheng <peng_cheng_13@163.com>
+ *  @organization   NSCC-GZ
+ *
  *  @author        Adam Storm <ajstorm@ca.ibm.com>
  *  @organization  IBM
  * 
- * Alluxio C/C++ APIs
+ * TDMS C/C++ APIs on top of Alluxio
  *
  */
 
@@ -44,46 +48,6 @@ TDMSClientContext::~TDMSClientContext() {
     }
 }
 
-/**
-  Set a string value in the Alluxio constants
-
-  @param[in] env The jni environment
-  @param[in] key Key of string constant to be set
-  @param[in] value Value to be assigned
-
-void TDMSClientContext::setAlluxioStringConstant(jni::Env &env, const char *key, const char *value) {
-  jvalue  retSet;
-
-  // Get the key object
-  JNIObjBase jKeyObject(env, env.getEnumObject("alluxio/Constants", key, "Ljava/lang/String;"));
-
-  // Construct the string
-  JNIStringBase jValueString(env, env.newStringUTF(value, value));
-
-  // Call the methods to set the string
-  env.callStaticMethod(&retSet, "alluxio/Configuration", "set",
-                      "(Ljava/lang/String;Ljava/lang/String;)V", 
-                      static_cast<jstring>(jKeyObject.getJObj()),
-                      jValueString.getJString());
-}
-*/
-/**
-  Connect to the Alluxio master node.
-
-  This only needs to be done once per process.  However, each thread that
-  interface with Alluxio needs to perform an attach first before it can use
-  JNI.
-
-  @param[in] host Host name of the Alluxio master node
-  @param[in] port Port name for the Alluxio master node
-*/
-/*void TDMSClientContext::connect() {
-  //Env env;
-  //jclass cls;
-  //jvalue ret; 
-  //AlluxioClientContext::setAlluxioStringConstant(env, "MASTER_HOSTNAME", "cn17638-enp5s0");
-  //AlluxioClientContext::setAlluxioStringConstant(env, "MASTER_RPC_PORT", "39999");
-}*/
 
 /**
    Attach the current thread to a running JVM.
@@ -147,7 +111,7 @@ bool TDMSFileSystem::exists(const char *path) {
   //jobject urlobj = TDMSURI::newURI(path);
   //std::unique_ptr<TDMSURI> uri(TDMSURI::newURI(path));
   jTDMSURI uri = TDMSURI::newURI(path);
-  printf("URL structure init succeed \n");
+  //printf("URL structure init succeed \n");
   mClient.getEnv().callMethod(&ret, mClient.getJObj(), "exists",
                               "(Lalluxio/AlluxioURI;)Z", uri->getJObj());
   return ret.z;
@@ -197,6 +161,40 @@ void TDMSFileSystem::deletePath(const char *path, bool recursive) {
   }
 }
 
+void TDMSFileSystem::deleteAlluxioPath(const char *path, bool alluxioOnly) {
+  jvalue ret;
+  jTDMSURI uri = TDMSURI::newURI(path);
+
+  if (!alluxioOnly) {
+    mClient.getEnv().callMethod(&ret, mClient.getJObj(), "delete",
+                                "(Lalluxio/AlluxioURI;)V", uri->getJObj());
+  } else {
+    jvalue deleteOptionsDefaults;
+    jvalue deleteOptionsSetRecursive;
+
+    mClient.getEnv().callStaticMethod(
+        &deleteOptionsDefaults, "alluxio/client/file/options/DeleteOptions",
+        "defaults", "()Lalluxio/client/file/options/DeleteOptions;");
+
+    mClient.getEnv().callMethod(
+        &deleteOptionsSetRecursive, (jobject)deleteOptionsDefaults.l,
+        "setAlluxioOnly", "(Z)Lalluxio/client/file/options/DeleteOptions;",
+        (jboolean)alluxioOnly);
+
+    mClient.getEnv().callMethod(
+        &ret, mClient.getJObj(), "delete",
+        "(Lalluxio/AlluxioURI;Lalluxio/client/file/options/DeleteOptions;)V",
+        uri->getJObj(), (jobject)deleteOptionsSetRecursive.l);
+  }
+}
+
+void TDMSFileSystem::loadMetadata(const char *path) {
+  jvalue ret;
+  jTDMSURI uri = TDMSURI::newURI(path);
+  mClient.getEnv().callMethod(&ret, mClient.getJObj(), "loadMetadata",
+                                "(Lalluxio/AlluxioURI;)V", uri->getJObj());
+}
+
 jFileInStream TDMSFileSystem::openFile(const char *path,
                                           TDMSOpenFileOptions *options) {
   jvalue ret;
@@ -220,6 +218,94 @@ jFileInStream TDMSFileSystem::openFile(const char *path,
 
   // FIXME: Change to shared_ptr?
   return (new FileInStream(mClient.getEnv(), ret.l));
+}
+
+// Query file
+jFileInStream TDMSFileSystem::queryFile(const char *path, const char *varname, double max, double min, bool augmented) {
+  jvalue ret;
+  jstring jvarname;
+  jvarname = mClient.getEnv().newStringUTF(varname, varname);
+  jTDMSURI uri = TDMSURI::newURI(path);
+  printf("Call JNI query\n");
+  mClient.getEnv().callMethod(&ret, mClient.getJObj(), "queryFile",
+                              "(Lalluxio/AlluxioURI;Ljava/lang/String;DDZ)Lalluxio/client/file/FileInStream;",
+                              uri->getJObj(), jvarname, (jdouble)max, (jdouble)min, (jboolean)augmented);
+  printf("JNI Done\n");
+  return (new FileInStream(mClient.getEnv(), ret.l));
+}
+
+// Select Files
+//char **TDMSFileSystem::selectFiles(const char* keylist[], const char* valuelist[], const char* typelist[], int argsize, int mpirsize, int mpirank) {
+int TDMSFileSystem::selectFiles(char **pathlist, const char* keylist[], const char* valuelist[], const char* typelist[], int argsize, int mpirsize, int mpirank) {
+  Env env;
+  jstring jKeyStr;
+  jstring jValueStr;
+  jstring jTypeStr;
+  //Init ArrayList
+  //printf("TDMS: Ready to select files\n");
+  jobject keyset = env.newObject("Ljava/util/ArrayList;", "()V");
+  jobject valueset = env.newObject("Ljava/util/ArrayList;", "()V");
+  jobject typeset = env.newObject("Ljava/util/ArrayList;", "()V");
+  //printf("TDMS: Get ArrayList object\n");
+  jvalue ret;
+  for (int i = 0; i < argsize; i++) {
+    //printf("TDMS: char to String\n");
+    jKeyStr = env.newStringUTF(keylist[i], "err");
+    jValueStr = env.newStringUTF(valuelist[i], "err");
+    jTypeStr = env.newStringUTF(typelist[i], "err");
+    //printf("TDMS: char to String Done\n");
+    env.callMethod(&ret, keyset, "add", "(Ljava/lang/Object;)Z", jKeyStr);
+    env.callMethod(&ret, valueset, "add", "(Ljava/lang/Object;)Z", jValueStr);
+    env.callMethod(&ret, typeset, "add", "(Ljava/lang/Object;)Z", jTypeStr);
+  }
+  //printf("TDMS: Init query data structure \n");
+  //Get path set
+  env.callMethod(&ret, mClient.getJObj(), "mpiSetect",
+      "(Ljava/util/List;Ljava/util/List;Ljava/util/List;II)Ljava/util/Set;", keyset, valueset, typeset, (jint) mpirsize, (jint) mpirank);
+  jobject jpathset = ret.l;
+  if (jpathset == NULL) {
+    exit(0);
+  }
+  jvalue ret2;
+  env.callMethod(&ret2, jpathset, "size", "()I"); 
+  int numofPaths = ret2.i;
+  //pathlist = (char **)malloc(numofPaths *  sizeof(char *));
+  //printf("TDMS: Get path set \n");
+  //Get Iterator
+  mClient.getEnv().callMethod(&ret2, jpathset, "iterator", "()Ljava/util/Iterator;");
+  jobject myiterator = ret2.l;
+  //printf("TDMS: Get Iterator \n");
+  //Retrieve paths
+  jvalue ret3;
+  for (int i = 0; i < numofPaths; i++) {
+     env.callMethod(&ret3, myiterator, "next", "()Ljava/lang/Object;");
+     jstring tmppath = (jstring) ret3.l;
+     pathlist[i] = mClient.getEnv().jstringToChar(tmppath);
+  }
+  return numofPaths;
+}
+//Add DatasetInfo
+void TDMSFileSystem::addDatasetInfo(char *name,  char* keylist[], char* valuelist[], int argsize) {
+  Env env;
+  jstring jName = env.newStringUTF(name, "err");
+  jstring jKeyStr;
+  jstring jValueStr;
+  jobject keyset = env.newObject("Ljava/util/ArrayList;", "()V");
+  jobject valueset = env.newObject("Ljava/util/ArrayList;", "()V");
+  jvalue ret;
+  for (int i = 0; i < argsize; i++) {
+    jKeyStr = env.newStringUTF(keylist[i], "err");
+    jValueStr = env.newStringUTF(valuelist[i], "err");
+    env.callMethod(&ret, keyset, "add", "(Ljava/lang/Object;)Z", jKeyStr);
+    env.callMethod(&ret, valueset, "add", "(Ljava/lang/Object;)Z", jValueStr);
+  }
+  env.callMethod(&ret, mClient.getJObj(),"addDatasetInfo", "(Ljava/lang/String;Ljava/util/List;Ljava/util/List;)V", jName, keyset, valueset);
+}
+
+void TDMSFileSystem::setDatasetInfo(const char *path) {
+  jTDMSURI uri = TDMSURI::newURI(path);
+  jvalue ret;
+  mClient.getEnv().callMethod(&ret, mClient.getJObj(),"setDatasetInfo", "(Lalluxio/AlluxioURI;)V", uri->getJObj());
 }
 
 jFileOutStream
@@ -425,6 +511,162 @@ std::vector<std::string> TDMSFileSystem::listPath(const char *path,
   return files;
 }
 
+// Optimizaiton for different data access patterns
+void TDMSFileSystem::setDataAccessPattern(char* DAP)
+{
+  Env env;
+  jvalue  ret;  
+  jobject filewritepolicy;
+  // Set block size to 512MB by default
+  long myblocksize = 512*1024*1024;
+  int mytier = 0;
+  std::string mydap = DAP;
+  jstring pattern = env.newStringUTF(DAP, "err");
+  jstring targetHost = env.newStringUTF("NULL", "err");
+  if(mydap == "PIPELINE"){ 
+    printf("Set  Data Access Pattern to <PIPELINE>\n");
+    mClient.getEnv().callMethod(&ret, mClient.getJObj(), "setDataAccessPattern", "(Ljava/lang/String;ILjava/lang/String;J)V", pattern, (jint)mytier, targetHost, (jlong)myblocksize);
+  }else if (mydap == "SCATTER"){
+    printf("Set  Data Access Pattern to <SCATTER>\n");
+    // Using MaxFree LoadBalanceStrategy to choose storage tier
+    char * lb = "MaxFree";
+    jvalue jmytier;
+    jstring jmyLoadBalanceStrategy = env->NewStringUTF(lb);
+    env.callStaticMethod(&jmytier,"InitTDMS","getLoadBalanceStrategy", "(Ljava/lang/String;)I",jmyLoadBalanceStrategy);
+    printf("Write with storage tier %d \n",jmytier.i);
+    mClient.getEnv().callMethod(&ret, mClient.getJObj(), "setDataAccessPattern", "(Ljava/lang/String;ILjava/lang/String;J)V", pattern, jmytier.i, targetHost, (jlong)myblocksize); 
+  }else if (mydap == "GATHER"){
+
+    printf("Error: Data Access Pattern <GATHER> needs to specify a hostname to collect data\nUsage: setDataAccessPattern(char* DAP, char* tagethost)\n");
+
+  }else if (mydap == "MULTICAST"){
+    printf("Set  Data Access Pattern to <MULTICAST>, write data to memory tier by default. Enable adaptive tier selection by using setDataAccessPattern(char* DAP, double size)\n");
+    // Set Write tier to memory tier by default
+    mytier = 0;
+    mClient.getEnv().callMethod(&ret, mClient.getJObj(), "setDataAccessPattern", "(Ljava/lang/String;ILjava/lang/String;J)V", pattern, (jint)mytier, targetHost, (jlong)myblocksize);
+  }else if (mydap == "REDUCE"){
+
+    printf("Set  Data Access Pattern to <REDUCE>\n");
+    // Using RoundRobin LoadBalanceStrategy to choose storage tier
+    char * lb = "MaxFree";
+    jvalue jmytier;
+    jstring jmyLoadBalanceStrategy = env->NewStringUTF(lb);
+    env.callStaticMethod(&jmytier,"InitTDMS","getLoadBalanceStrategy", "(Ljava/lang/String;)I",jmyLoadBalanceStrategy);
+    printf("Write with storage tier %d \n",jmytier.i);
+    mClient.getEnv().callMethod(&ret, mClient.getJObj(), "setDataAccessPattern", "(Ljava/lang/String;ILjava/lang/String;J)V", pattern, jmytier.i, targetHost, (jlong)myblocksize);
+  }else{
+    // Using RoundRobin LoadBalanceStrategy to choose storage tier
+    char * lb = "MaxFree";
+    jvalue jmytier;
+    jstring jmyLoadBalanceStrategy = env->NewStringUTF(lb);
+    env.callStaticMethod(&jmytier,"InitTDMS","getLoadBalanceStrategy", "(Ljava/lang/String;)I",jmyLoadBalanceStrategy);
+    printf("Write with storage tier %d \n",jmytier.i);
+    mClient.getEnv().callMethod(&ret, mClient.getJObj(), "setDataAccessPattern", "(Ljava/lang/String;ILjava/lang/String;J)V", pattern, jmytier.i, targetHost, (jlong)myblocksize);
+    printf("Set  Data Access Pattern to %s \n", DAP);
+  }
+
+}
+
+void TDMSFileSystem::setDataAccessPattern(char* DAP, char* tagethost){
+  Env env;
+  jvalue  ret;
+  long myblocksize = 512*1024*1024;
+  int mytier = 0;
+  jstring pattern = env.newStringUTF(DAP, "err");
+  jstring targetHost = env.newStringUTF(tagethost, "err");
+  std::string mydap = DAP;
+  if(mydap == "GATHER" || mydap == "REDUCE"){
+    printf("Set  Data Access Pattern to <GATHER> with host %s\n",tagethost);
+    // Using MaxFree LoadBalanceStrategy to choose storage tier
+    char * lb = "MaxFree";
+    jvalue jmytier;
+    jstring jmyLoadBalanceStrategy = env->NewStringUTF(lb);
+    env.callStaticMethod(&jmytier,"InitTDMS","getLoadBalanceStrategy", "(Ljava/lang/String;)I",jmyLoadBalanceStrategy);
+
+    // Set block size to 512MB by default
+    long myblocksize = 512*1024*1024;
+    mClient.getEnv().callMethod(&ret, mClient.getJObj(), "setDataAccessPattern", "(Ljava/lang/String;ILjava/lang/String;J)V", pattern, jmytier.i, targetHost, (jlong)myblocksize);
+   }else{
+    printf("Failed to  Data Access Pattern \nOnly GATHER PATTERN needs argment <tagethost>\nTry setDataAccessPattern(char* DAP) instead for other data access pattern!\n");
+  }
+
+}
+
+void TDMSFileSystem::setDataAccessPattern(char* DAP, double size){
+  Env env;
+  jvalue  ret;
+  long myblocksize = (long) size;
+  int mytier = 0;
+  std::string mydap = DAP;
+  jstring pattern = env.newStringUTF(DAP, "err");
+  jstring targetHost = env.newStringUTF("NULL", "err");
+  if(mydap == "MULTICAST" || mydap == "SCATTER"){
+    printf("Set  Data Access Pattern to <MULTICAST>, write data to memory tier by default. Enable adaptive tier selection by using setDataAccessPattern(char* DAP, double size)\n"); 
+
+    // choose storage tier depends on file size.
+    if (size < 1024*1024) {
+      mytier = 0;
+      mClient.getEnv().callMethod(&ret, mClient.getJObj(), "setDataAccessPattern", "(Ljava/lang/String;ILjava/lang/String;J)V", pattern, (jint) mytier, targetHost, (jlong)myblocksize);
+    } else {
+      // Using MaxFree LoadBalanceStrategy to choose storage tier
+      char * lb = "MaxFree";
+      jvalue jmytier;
+      jstring jmyLoadBalanceStrategy = env->NewStringUTF(lb);
+      env.callStaticMethod(&jmytier,"InitTDMS","getLoadBalanceStrategy", "(Ljava/lang/String;)I",jmyLoadBalanceStrategy);
+      mClient.getEnv().callMethod(&ret, mClient.getJObj(), "setDataAccessPattern", "(Ljava/lang/String;ILjava/lang/String;J)V", pattern, jmytier.i, targetHost, (jlong)myblocksize);
+    }
+
+  } else {
+    printf("Failed to  Data Access Pattern \nOnly MULTICAST PATTERN needs argment <FileSize>\nTry setDataAccessPattern(char* DAP) instead for other data access pattern!\n");
+  }
+}
+
+void TDMSFileSystem::defineDataAccessPattern(char* DAP) {
+  Env env;
+  jvalue  ret;
+  jstring pattern = env.newStringUTF(DAP, "err");
+  mClient.getEnv().callMethod(&ret, mClient.getJObj(), "defineDataAccessPattern", "(Ljava/lang/String;)V", pattern);
+}
+
+void TDMSFileSystem::setStorageTier(char* DAP, int tier) {
+  Env env;
+  jvalue  ret;
+  jstring pattern = env.newStringUTF(DAP, "err");
+  mClient.getEnv().callMethod(&ret, mClient.getJObj(), "setStorageTier", "(Ljava/lang/String;I)V", pattern, (jint)tier);
+}
+
+void TDMSFileSystem::setBlockSize(char* DAP, double size) {
+  Env env;
+  long myblocksize = (long) size;
+  jvalue  ret;
+  jstring pattern = env.newStringUTF(DAP, "err");
+  mClient.getEnv().callMethod(&ret, mClient.getJObj(), "setBlockSize", "(Ljava/lang/String;J)V", pattern, (jlong)myblocksize);
+}
+
+void TDMSFileSystem::setLayoutStrategy(char* DAP, char* layout) {
+  Env env;
+  jvalue  ret;
+  jstring pattern = env.newStringUTF(DAP, "err");
+  jstring mlayout = env.newStringUTF(layout, "err");
+  mClient.getEnv().callMethod(&ret, mClient.getJObj(), "setLayoutStrategy", "(Ljava/lang/String;Ljava/lang/String;)V", pattern, mlayout);
+}
+
+void TDMSFileSystem::setLoadBalanceStrategy(char* DAP, char* loadbalance) {
+  Env env;
+  jvalue  ret;
+  jstring pattern = env.newStringUTF(DAP, "err");
+  jstring mloadbalance = env.newStringUTF(loadbalance, "err");
+  mClient.getEnv().callMethod(&ret, mClient.getJObj(), "setLoadBalanceStrategy", "(Ljava/lang/String;Ljava/lang/String;)V", pattern, mloadbalance);
+}
+
+void TDMSFileSystem::setHost(char* DAP, char* host) {
+  Env env;
+  jvalue  ret;
+  jstring pattern = env.newStringUTF(DAP, "err");
+  jstring mhost = env.newStringUTF(host, "err");
+  mClient.getEnv().callMethod(&ret, mClient.getJObj(), "setHost", "(Ljava/lang/String;Ljava/lang/String;)V", pattern, mhost);
+}
+
 //////////////////////////////////////////
 //// FileOutStream
 ////////////////////////////////////////////
@@ -477,6 +719,33 @@ void FileOutStream::write(const void *buff, int length, int off, int maxLen)
     m_env.callMethod(NULL, m_obj, "write", "([BII)V", jBuf, (jint) off, (jint) maxLen);
  
   m_env->DeleteLocalRef(jBuf);
+}
+
+
+//Build index
+void FileOutStream::buildIndex(int size, bool augmented){
+  m_env.callMethod(NULL, m_obj, "buildIndex", "(IZ)V", (jint)size, (jboolean)augmented);
+}
+
+//Get index flag
+bool FileOutStream::shouldIndex(){
+  jvalue ret;
+  m_env.callMethod(&ret, m_obj, "shouldIndex","()Z");
+  return ret.z;
+}
+
+//Get block max value
+double FileOutStream::getBlockMax(){
+  jvalue ret;
+  m_env.callMethod(&ret, m_obj,"getBlockMax","()D");
+  return ret.d;
+}
+
+//Get block min value
+double FileOutStream::getBlockMin(){
+  jvalue ret;
+  m_env.callMethod(&ret, m_obj,"getBlockMin","()D");
+  return ret.d;
 }
 
 //////////////////////////////////////////
@@ -592,9 +861,37 @@ int FileInStream::read(void *buff, int length, int off, int maxLen,
    return rdSz;
 }
 
+int FileInStream::read(void *buff, int off, int length){
+    jbyteArray jBuf;
+    jvalue ret;
+    int rdSz;
+    try{
+      jBuf = m_env.newByteArray(length);
+      m_env.callMethod(&ret, m_obj, "read", "([BII)I", jBuf, off, length);
+    } catch (NativeException) {
+      if (jBuf != NULL) {
+         m_env->DeleteLocalRef(jBuf);
+      }
+      throw;
+    }
+    rdSz = ret.i;
+    if (rdSz > 0) {
+      m_env->GetByteArrayRegion(jBuf, 0, rdSz, (jbyte*) buff);
+    }
+    m_env->DeleteLocalRef(jBuf);
+    return rdSz;
+}
+
 void FileInStream::seek(long pos)
 {
   m_env.callMethod(NULL, m_obj, "seek", "(J)V", (jlong) pos);
+}
+
+long FileInStream::maxSeekPosition()
+{
+  jvalue ret;
+  m_env.callMethod(&ret, m_obj, "maxSeekPosition", "()J");
+  return ret.j;
 }
 
 long FileInStream::skip(long n)
@@ -634,104 +931,47 @@ jTDMSOpenFileOptions TDMSOpenFileOptions::getOpenFileOptions()
     return new TDMSOpenFileOptions(env, jFileOptions.l);
 }
 
-// Optimizaiton for different data access patterns
-void TDMSCreateFileOptions::setDataAccessPattern(char* DAP)
-{
-  Env env;
-  jvalue  ret;  
-  jobject filewritepolicy;
-  long myblocksize;
-  int mytier;
-  std::string mydap = DAP;
-  if(mydap == "PIPELINE"){   
+//Set file struct info to guide the index generation
+void TDMSCreateFileOptions::setFileInfo(int num, ...){
+  Env m_env;
+  jclass list_jcs = m_env.findClass("java/util/ArrayList");
+  if (list_jcs == NULL) {
+    printf("Java class: ArrayList not find\n");
+    exit(-1);
+  }
+  jmethodID list_init = m_env.getMethodId(list_jcs, "<init>", "()V");
 
-    printf("Set  Data Access Pattern to <PIPELINE>\n");
-    // Set filewritepolicy to localfirst policy
-    filewritepolicy = env.getLocationPolicy(DAP,NULL);
-    m_env.callMethod(&ret, m_obj,"setLocationPolicy","(Lalluxio/client/file/policy/FileWriteLocationPolicy;)Lalluxio/client/file/options/CreateFileOptions;",filewritepolicy);
-    // Set block size to 512MB by default
-    //myblocksize = 512*1024*1024;
-    //m_env.callMethod(&ret, m_obj,"setBlockSizeBytes","(J)Lalluxio/client/file/options/CreateFileOptions;",(jlong)myblocksize);
-    // Set Write tier to memory tier
-    mytier = 0;
-    m_env.callMethod(&ret, m_obj,"setWriteTier","(I)Lalluxio/client/file/options/CreateFileOptions;",(jint)mytier);
+  jobject varlist = m_env->NewObject(list_jcs, list_init, "");
+  jobject typelist = m_env->NewObject(list_jcs, list_init, "");
 
-  }else if (mydap == "SCATTER"){
+  jstring jvarname;
+  jstring jvartype;
 
-    printf("Set  Data Access Pattern to <SCATTER>\n");
-    // Set filewritepolicy to RoundRobinPolicy
-    filewritepolicy = env.getLocationPolicy(DAP,NULL);
-    m_env.callMethod(&ret, m_obj,"setLocationPolicy","(Lalluxio/client/file/policy/FileWriteLocationPolicy;)Lalluxio/client/file/options/CreateFileOptions;",filewritepolicy);
-    // Using MaxFree LoadBalanceStrategy to choose storage tier
-    char * lb = "MaxFree";
-    jvalue jmytier;
-    jstring jmyLoadBalanceStrategy = m_env->NewStringUTF(lb);
-    m_env.callStaticMethod(&jmytier,"InitTDMS","getLoadBalanceStrategy", "(Ljava/lang/String;)I",jmyLoadBalanceStrategy);
-    printf("Write with storage tier %d \n",jmytier.i);
-    m_env.callMethod(&ret, m_obj,"setWriteTier","(I)Lalluxio/client/file/options/CreateFileOptions;",jmytier.i);
-  
-  }else if (mydap == "GATHER"){
-
-    printf("Error: Data Access Pattern <GATHER> needs to specify a hostname to collect data\nUsage: setDataAccessPattern(char* DAP, char* tagethost)\n");
-
-  }else if (mydap == "MULTICAST"){
-
-    printf("Set  Data Access Pattern to <MULTICAST>\n");
-    // Set filewritepolicy to RoundRobinPolicy policy
-    filewritepolicy = env.getLocationPolicy(DAP,NULL);
-    m_env.callMethod(&ret, m_obj,"setLocationPolicy","(Lalluxio/client/file/policy/FileWriteLocationPolicy;)Lalluxio/client/file/options/CreateFileOptions;",filewritepolicy);
-    // Set Write tier to memory tier
-    mytier = 0;
-    m_env.callMethod(&ret, m_obj,"setWriteTier","(I)Lalluxio/client/file/options/CreateFileOptions;",(jint)mytier); 
-    
-  }else if (mydap == "REDUCE"){
-
-    printf("Set  Data Access Pattern to <REDUCE>\n");
-    // Set filewritepolicy to RoundRobinPolicy
-    filewritepolicy = env.getLocationPolicy(DAP,NULL);
-    m_env.callMethod(&ret, m_obj,"setLocationPolicy","(Lalluxio/client/file/policy/FileWriteLocationPolicy;)Lalluxio/client/file/options/CreateFileOptions;",filewritepolicy);
-    // Using RoundRobin LoadBalanceStrategy to choose storage tier
-    char * lb = "RoundRobin";
-    jvalue jmytier;
-    jstring jmyLoadBalanceStrategy = m_env->NewStringUTF(lb);
-    m_env.callStaticMethod(&jmytier,"InitTDMS","getLoadBalanceStrategy", "(Ljava/lang/String;)I",jmyLoadBalanceStrategy);
-    printf("Write with storage tier %d \n",jmytier.i);
-    m_env.callMethod(&ret, m_obj,"setWriteTier","(I)Lalluxio/client/file/options/CreateFileOptions;",jmytier.i);
-  }else{
-
-    printf("Unknown Data Access Pattern!\nSupported Data Access Pattern are PIPELINE / SCATTER / GATHER / MULTICAST / REDUCE ! \n");
-
+  va_list ap;
+  va_start(ap,num);
+  char* tmp1;
+  char* tmp2;
+  for(int i=0; i<num; i++){
+    tmp1 = va_arg(ap, char*);
+    tmp2 = va_arg(ap, char*);
+    if(tmp1 == NULL || tmp2 == NULL) {
+      printf("Error in var number, please check it carefully! \n");
+      exit(-1);
+    }
+    jvarname = m_env.newStringUTF(tmp1, tmp1);
+    jvartype = m_env.newStringUTF(tmp2, tmp2);
+    m_env.callMethod(NULL, varlist, "add", "(Ljava/lang/Object;)Z", jvarname);
+    m_env.callMethod(NULL, typelist, "add", "(Ljava/lang/Object;)Z", jvartype);
+    printf("varname is %s, type is %s \n",tmp1, tmp2);
   }
 
+  m_env.callMethod(NULL, m_obj, "setFileInfo", "(Ljava/util/ArrayList;Ljava/util/ArrayList;)V", varlist, typelist);
+
+  va_end(ap);
+  m_env->DeleteLocalRef(varlist);
+  m_env->DeleteLocalRef(typelist);
+  m_env->DeleteLocalRef(jvarname);
+  m_env->DeleteLocalRef(jvartype);
 }
-
-void TDMSCreateFileOptions::setDataAccessPattern(char* DAP, char* tagethost){
-  Env env;
-  jvalue  ret;
-  jobject filewritepolicy;
-  std::string mydap = DAP;
-  if(mydap == "GATHER"){
-    printf("Set  Data Access Pattern to <GATHER> with host %s\n",tagethost);
-    //Set filewritepolicy to write data to target host
-    filewritepolicy = env.getLocationPolicy(DAP,tagethost);
-    m_env.callMethod(&ret, m_obj,"setLocationPolicy","(Lalluxio/client/file/policy/FileWriteLocationPolicy;)Lalluxio/client/file/options/CreateFileOptions;",filewritepolicy);
-
-    // Using MaxFree LoadBalanceStrategy to choose storage tier
-    char * lb = "MaxFree";
-    jvalue jmytier;
-    jstring jmyLoadBalanceStrategy = m_env->NewStringUTF(lb);
-    m_env.callStaticMethod(&jmytier,"InitTDMS","getLoadBalanceStrategy", "(Ljava/lang/String;)I",jmyLoadBalanceStrategy);
-    // m_env.callMethod(&ret, m_obj,"setWriteTier","(I)Lalluxio/client/file/options/CreateFileOptions;",jmytier.i);
-	m_env.callMethod(&ret, m_obj,"setWriteTier","(I)Lalluxio/client/file/options/CreateFileOptions;",(jint)0);	
-
-    // Set block size to 512MB by default
-    long myblocksize = 512*1024*1024;
-    m_env.callMethod(&ret, m_obj,"setBlockSizeBytes","(J)Lalluxio/client/file/options/CreateFileOptions;",(jlong)myblocksize);
-   }else{
-    printf("Failed to  Data Access Pattern \nOnly GATHER PATTERN needs argment <tagethost>\nTry setDataAccessPattern(char* DAP) instead for other data access pattern!\n");
-  }
-
-}
-
 
 /* vim: set ts=4 sw=4 : */
